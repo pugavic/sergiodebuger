@@ -1,10 +1,25 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+error_reporting(E_ALL);
+ini_set('display_errors', TRUE);
+/**
+ * Helper for debug
+ * @param mixed $message
+ * @param string $type
  */
+function shat($message=null,$type = 'status') {
+  drupal_set_message('<pre>'.var_export($message, TRUE).'</pre>',$type);
+}
+
+/**
+ * Helper for debug
+ * @param string $type
+ */
+function trc($type = 'status') {
+  shat(debug_backtrace(),$type);
+}
+
+
 
 function recur($arr_data = array(), $reg_exp) {
     $new_ret = $arr_data;
