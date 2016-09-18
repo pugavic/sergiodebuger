@@ -4,4 +4,6 @@ core = 7.x
 package = A Debuger
 version = 7.x-0.1
 
+files[] = sergiodebuger.func.inc
+
 
