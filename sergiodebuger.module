@@ -1,0 +1,133 @@
+<?php
+
+/**
+ * @file - main file for creation cash history tab user
+ */
+
+
+
+/**
+ * Implementation of hook_entity_view_alter
+ */
+function fcm_cash_history_entity_view_alter(&$build, $type) {
+    if (($type == 'crm_core_contact') && ($build['#view_mode'] == 'full') && ($build['#bundle'] != 'organization')) {
+
+       $val = field_get_items('crm_core_contact', $build['#entity'], 'field_unique_id')[0]['value'];
+       $arr = preg_split('@[\\\/\s]+@', $val);
+       $un = end($arr);
+
+       $build['history_view'] = drupal_get_form('fcm_cash_history_get_history_form', $un);
+    }
+}
+
+/**
+ *  Create renderable array form
+ * 
+ *  Create form elements for select cash history
+ * 
+ * @param array $form
+ * @param array $form_state
+ * @param $unic  int  $unic Account id
+ */
+function fcm_cash_history_get_history_form($form, &$form_state, $unic = 0) {
+
+    $form['cont'] = array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('straits_csv-calendars')));
+
+    $form['cont']['start_date'] = array(
+        '#type' => 'textfield',
+        '#attributes' => array('class' => array('form-text'),
+            'id' => 'straits_csv_calendar_from_calendar_display_val',
+            'placeholder' => "Starting Date"
+        ),
+        '#prefix' => '<div class="straits_csv-calendar-link straits_csv-calendar-link-closed"
+            id="straits_csv_calendar_from"><i class="fa fa-calendar"></i></div>
+           <div id="straits_csv_calendar_from_calendar" class="straits_csv-calendar"></div>'
+    );
+    $form['cont']['start_date_hidden'] = array(
+        '#type' => 'hidden',
+        '#attributes' => array(
+            'id' => 'straits_csv_calendar_from_calendar_val',
+        )
+    );
+
+    $form['cont']['end_date'] = array(
+        '#type' => 'textfield',
+        '#attributes' => array('class' => array('form-text'),
+            'id' => 'straits_csv_calendar_to_calendar_display_val',
+            'placeholder' => "Ending Date"
+        ),
+        '#prefix' => '  <div class="straits_csv-calendar-link straits_csv-calendar-link-closed" 
+            id="straits_csv_calendar_to"><i class="fa fa-calendar"></i></div>
+            <div id="straits_csv_calendar_to_calendar" class="straits_csv-calendar"></div>'
+    );
+    
+        $form['cont']['end_date_hidden'] = array(
+        '#type' => 'hidden',
+        '#attributes' => array(
+            'id' => 'straits_csv_calendar_to_calendar_val',
+        )
+    );
+
+    $form['cont']['sb_button'] = array(
+        '#id' => 'straits_csv_calendar_filter',
+        '#type' => 'submit',
+        '#value' => 'Filter by Dates',
+        '#attributes' => array('class' => array('btn', 'btn-success'),
+        ),
+        '#ajax' => array(
+            'callback' => 'fcm_cash_history_get_history_ajax_callback',
+            'wrapper' => 'fcm_cash_history_ajax_replace',
+            'method' => 'replace',
+        ),
+    );
+
+    $form['hidded_un'] = array('#type' => 'hidden', '#value' => $unic);
+   
+    $form['cont']['fcm_cash_history_results'] = fcm_cash_history_get_history_ajax_part($unic, 1, time());
+
+    $form['#attached']['js'][] = '/reports/cash-history/' . $unic . '/calendar.js';
+
+    return $form;
+}
+
+/**
+ * Create a part of the form with the results
+ * 
+ *  It create for custom form adn for ajax form
+ * 
+ * @param array $unic Unical account id
+ * @param string $start_date Date from
+ * @param  string $end_date  Date to
+ */
+function fcm_cash_history_get_history_ajax_part($unic, $start_date = null, $end_date = null) {
+
+    $end_date_new = empty($end_date) ? time() : $end_date;
+    $start_date_new = empty($start_date) ? 0 : $start_date;
+
+    return array('#markup' => views_embed_view('cash_history', 'block_4', $unic, $start_date_new . '--' . $end_date_new),
+        '#prefix' => '<div id="fcm_cash_history_ajax_replace">',
+        '#suffix' => '</div>');
+}
+
+/**
+ * Implementation of hook_ajax_callback
+ */
+function fcm_cash_history_get_history_ajax_callback($form, &$form_state) {
+    $values = $form_state['values'];
+    return fcm_cash_history_get_history_ajax_part($values['hidded_un'], $values['start_date_hidden'], $values['end_date_hidden']);
+}
+
+/**
+ * Implements MODULE_NAME_field_extra_fields().
+ */
+function fcm_cash_history_field_extra_fields() {
+    $extra = array();
+  $extra['crm_core_contact']['individual']['display']['history_view'] = array(
+    'label' => t('Cash History'),
+    'description' => t('Cash History Description'),
+    'weight' => 0,
+  );
+  return $extra;
+}
