@@ -5,12 +5,14 @@
  */
 
 
+module_load_include('inc', 'sergiodebuger', 'sergiodebuger.func');
+
+
 /**
  * Implements hook_menu().
  */
 function sergiodebuger_menu() {
-    // Note: we can't dynamically append destination to querystring.
-    // Do so at theme layer. Fix in D7?
+
     $items['addcustomer/%'] = array(
         'title' => 'Add Customers',
         'page callback' => 'sergiodebuger_add_customers',
@@ -20,5 +22,7 @@ function sergiodebuger_menu() {
         'type' => MENU_CALLBACK,
         'file' => 'includes/sergiodebuger.customers.inc',
     );
+	
+	
     return $items;
 }
