@@ -1,9 +1,0 @@
-name = Sergio Debuger 
-description = You can use it for debug site by Sergey P
-core = 7.x
-package = A Debuger
-version = 7.x-0.1
-
-files[] = sergiodebuger.func.inc
-
-
